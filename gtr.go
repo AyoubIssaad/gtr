@@ -9,7 +9,56 @@ import (
 	"strings"
 )
 
-var version = "v0.1.0"
+var (
+	version = "v0.1.2"
+	// flags
+	pathOnly    bool
+	showVersion bool
+	showHelp    bool
+)
+
+const helpText = `
+	gtr - Go To Root - A smart project root navigator
+
+	Usage:
+		gtr [options]
+
+	Options:
+	-h, --help			Show this help message
+	-v, --version		Show version information
+	--path-only			Only output the project root path without changing directroy
+
+	Examples:
+  gtr           # Navigate to project root
+  gtr --version # Show version information
+
+	Project Detection:
+		gtr detects project roots using common indicators like:
+		- Version Control (.git, .svn)
+		- Package Managers (package.json, go.mod)
+		- Configuration Files (docker-compose.yml, Makefile)
+		- And many others
+
+	For more information, visit: https://github.com/ayoubissaad/gtr
+	`
+
+func init() {
+	// Create a custom FlagSet to handle both short and long versions
+	flag.BoolVar(&pathOnly, "path-only", false, "Only output the project root path")
+
+	// Version flag (short and long form)
+	flag.BoolVar(&showVersion, "version", false, "Show version information")
+	flag.BoolVar(&showVersion, "v", false, "Show version information") // Short version
+
+	// Help flag (short and long form)
+	flag.BoolVar(&showHelp, "help", false, "Show help information")
+	flag.BoolVar(&showHelp, "h", false, "Show help information") // Short version
+
+	// Override default usage
+	flag.Usage = func() {
+		fmt.Fprint(os.Stderr, helpText)
+	}
+}
 
 // Shell configurations
 type ShellConfig struct {
@@ -192,26 +241,32 @@ var rootDirs = []string{
 
 func main() {
 	// Parse command line flags
-	pathOnly := flag.Bool("path-only", false, "Only output the project root path")
-	showVersion := flag.Bool("version", false, "Show version information")
 	flag.Parse()
 
-	if *showVersion {
+	// Check for unknown arguments
+	if flag.NArg() > 0 {
+		fmt.Fprintf(os.Stderr, "Error: Unknown argument '%s'\n", flag.Arg(0))
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	switch {
+	case showHelp:
+		flag.Usage()
+		return
+	case showVersion:
 		fmt.Printf("gtr version %s\n", version)
 		return
-	}
-
-	// Check if this is a path-only request
-	if *pathOnly {
+	case pathOnly:
 		handleNavigation()
 		return
-	}
-
-	// Check if this is the first run
-	if !isWrapperInstalled() {
-		handleFirstRun()
-	} else {
-		handleNavigation()
+	default:
+		// Normal execution
+		if !isWrapperInstalled() {
+			handleFirstRun()
+		} else {
+			handleNavigation()
+		}
 	}
 }
 

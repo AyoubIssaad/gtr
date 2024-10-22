@@ -14,7 +14,7 @@
 ## Installation
 
 ```bash
-go install github.com/yourusername/gtr@latest
+go install github.com/ayoubissaad/gtr@latest
 ```
 
 After installation, simply run `gtr` once, and it will guide you through the setup process:
@@ -93,7 +93,7 @@ end
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/gtr.git
+git clone https://github.com/ayoubissaad/gtr.git
 cd gtr
 
 # Build and install locally
